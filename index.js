@@ -9,6 +9,7 @@ const port = process.env.PORT || 3000
 
 // Middleware
 app.use(cors())
+app.use(express.json())
 
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
@@ -27,6 +28,16 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+
+
+    const productCatalogDB = client.db('ProductCatalogDB')
+    const productsCollection = productCatalogDB.collection('products')
+
+    app.get('/products', async (req,res)=>{
+      const result = await productsCollection.find().toArray()
+      res.send(result)
+    })
+    
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
@@ -38,10 +49,10 @@ async function run() {
 run().catch(console.dir);
 
 
-app.get('/',(req,res)=>{
-    res.send("PRODUCT CATALOG SERVER IN RUNNING")
+app.get('/', (req, res) => {
+  res.send("PRODUCT CATALOG SERVER IN RUNNING")
 })
 
-app.listen(port,()=>{
-    console.log("PRODUCT CATALOG SERVER RUNNING ON",port);
+app.listen(port, () => {
+  console.log("PRODUCT CATALOG SERVER RUNNING ON", port);
 })
