@@ -27,7 +27,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
 
     const productCatalogDB = client.db('ProductCatalogDB')
@@ -70,17 +70,8 @@ async function run() {
       let query = {}
 
       query = {
-        // name: {
-        //   $regex: searchQuery,
-        //   $options: 'i'
-        // },
-
-        // company_name: {
-        //   $regex: {brandName},
-        //   $options:'i'
-        // }
         $and: [
-          { name: { $regex: searchQuery, $options: 'i' } },
+          { name: { $regex: searchQuery ? searchQuery : "", $options: 'i' } },
           brandName ? { company_name: { $regex: brandName, $options: 'i' } } : {},
           category ? { category: { $regex: category, $options: 'i' } } : {},
           {price:{$gte:minPrice, $lte:maxPrice}}
@@ -99,8 +90,8 @@ async function run() {
     })
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    // await client.db("admin").command({ ping: 1 });
+    // console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
