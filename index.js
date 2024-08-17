@@ -42,7 +42,9 @@ async function run() {
       const page = parseInt(req.query.page)
       const size = parseInt(req.query.size)
       const sortOption = req.query.sort;
+      const searchQuery = req.query.query;
       const skip = (page - 1)*size
+      console.log(searchQuery);
 
       let sort = {}
       switch (sortOption){
@@ -62,7 +64,14 @@ async function run() {
           sort = {}
       }
 
-      const result = await productsCollection.find()
+      const query = {
+        name:{
+          $regex:searchQuery,
+          $options:'i'
+        }
+      }
+
+      const result = await productsCollection.find(query)
       .skip(skip)
       .limit(size)
       .sort(sort)
