@@ -33,8 +33,41 @@ async function run() {
     const productCatalogDB = client.db('ProductCatalogDB')
     const productsCollection = productCatalogDB.collection('products')
 
+    app.get('/productsCount',async(req,res)=>{
+      const count = await productsCollection.estimatedDocumentCount()
+      res.send({count})
+    })
+
     app.get('/products', async (req,res)=>{
-      const result = await productsCollection.find().toArray()
+      const page = parseInt(req.query.page)
+      const size = parseInt(req.query.size)
+      const sortOption = req.query.sort;
+      const skip = (page - 1)*size
+
+      let sort = {}
+      switch (sortOption){
+        case 'low-high':
+          sort = {price:1}
+          break;
+        case 'high-low':
+          sort = {price:-1}
+          break;
+        case 'newest':
+          sort = {date_added:1}
+          break;
+        case 'auto':
+          sort = {}
+          break;
+        default:
+          sort = {}
+      }
+
+      const result = await productsCollection.find()
+      .skip(skip)
+      .limit(size)
+      .sort(sort)
+      .toArray()
+
       res.send(result)
     })
     
