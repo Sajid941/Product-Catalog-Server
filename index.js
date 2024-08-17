@@ -33,29 +33,33 @@ async function run() {
     const productCatalogDB = client.db('ProductCatalogDB')
     const productsCollection = productCatalogDB.collection('products')
 
-    app.get('/productsCount',async(req,res)=>{
+    app.get('/productsCount', async (req, res) => {
       const count = await productsCollection.estimatedDocumentCount()
-      res.send({count})
+      res.send({ count })
     })
 
-    app.get('/products', async (req,res)=>{
+    app.get('/products', async (req, res) => {
       const page = parseInt(req.query.page)
       const size = parseInt(req.query.size)
       const sortOption = req.query.sort;
       const searchQuery = req.query.query;
-      const skip = (page - 1)*size
-      console.log(searchQuery);
+      const brandName = req.query.brandName;
+      const category = req.query.category;
+      const minPrice = parseInt(req.query.minimumPrice) || 0 ;
+      const maxPrice = parseInt(req.query.maximumPrice) || Number.MAX_SAFE_INTEGER
+      const skip = (page - 1) * size
+      console.log(minPrice,maxPrice);
 
       let sort = {}
-      switch (sortOption){
+      switch (sortOption) {
         case 'low-high':
-          sort = {price:1}
+          sort = { price: 1 }
           break;
         case 'high-low':
-          sort = {price:-1}
+          sort = { price: -1 }
           break;
         case 'newest':
-          sort = {date_added:1}
+          sort = { date_added: -1 }
           break;
         case 'auto':
           sort = {}
@@ -63,23 +67,37 @@ async function run() {
         default:
           sort = {}
       }
+      let query = {}
 
-      const query = {
-        name:{
-          $regex:searchQuery,
-          $options:'i'
-        }
+      query = {
+        // name: {
+        //   $regex: searchQuery,
+        //   $options: 'i'
+        // },
+
+        // company_name: {
+        //   $regex: {brandName},
+        //   $options:'i'
+        // }
+        $and: [
+          { name: { $regex: searchQuery, $options: 'i' } },
+          brandName ? { company_name: { $regex: brandName, $options: 'i' } } : {},
+          category ? { category: { $regex: category, $options: 'i' } } : {},
+          {price:{$gte:minPrice, $lte:maxPrice}}
+        ]
+
       }
 
+
       const result = await productsCollection.find(query)
-      .skip(skip)
-      .limit(size)
-      .sort(sort)
-      .toArray()
+        .skip(skip)
+        .limit(size)
+        .sort(sort)
+        .toArray()
 
       res.send(result)
     })
-    
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
