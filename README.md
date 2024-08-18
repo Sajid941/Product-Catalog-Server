@@ -97,13 +97,13 @@ git checkout -b feature-branch-name
 # Make your changes
 ```
 
-### Step 5:
+### Step 6:
 ```bash
 # Commit your changes
 git commit -m "Description of changes"
 
 ```
-### Step 5:
+### Step 7:
 ```bash
 # Push to your branch
 git push origin feature-branch-name
